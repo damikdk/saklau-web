@@ -13,6 +13,7 @@ export type ImageFile = {
   height: number;
   status: string;
   id: string;
+  taken_date: string;
 };
 
 const getAll = async () => {
@@ -21,7 +22,8 @@ const getAll = async () => {
 
   const arrayOfLists = jsonResponse.map((fileMeta: ImageFile) => {
     const fileUrl = `${ENDPOINT}file/${fileMeta.path}`;
-    const thumbnailUrl = `${ENDPOINT}file/cache/${fileMeta.id}.jpg`;
+    const thumbnailExtension = fileMeta.type == "video" ? "webp" : "jpg";
+    const thumbnailUrl = `${ENDPOINT}file/cache/${fileMeta.id}.${thumbnailExtension}`;
 
     return {
       path: fileUrl,
@@ -30,10 +32,14 @@ const getAll = async () => {
       width: fileMeta.width,
       height: fileMeta.height,
       status: fileMeta.status,
+      taken_date: fileMeta.taken_date,
     };
   });
 
-  return arrayOfLists;
+  return arrayOfLists.sort(
+    // @ts-ignore
+    (a, b) => new Date(b.taken_date).getTime() - new Date(a.taken_date).getTime()
+  );
 };
 
 const fireAction = (action: string) => {
